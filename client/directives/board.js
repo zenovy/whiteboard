@@ -102,6 +102,106 @@ angular.module('whiteboard')
         Broadcast.selectShapeEditor(infoForServer, mousePosition);
       };
       this.finishShape = function () {
+        var paper = $scope.selectedShape.el.paper;
+        function roundness (pathStr) {
+          function createPointsFromPath (pathStr) {
+            var samplingRate = 0.02;
+            var points = [];
+            var pathLength = Raphael.getTotalLength(pathStr);
+            for (var i = 0; i < 1; i += samplingRate) {
+              points.push(Raphael.getPointAtLength(pathStr, pathLength * i));
+            }
+            return points;
+          }
+
+          var points = createPointsFromPath(pathStr);
+
+          var arrowSize = 10;
+          var offsetY = 150;
+          var culmX = 0;
+          var culmY = 0;
+          points.forEach(function (point, index, points) {
+            if (index === points.length - 1) return;
+            var p0 = points[index];
+            var p1 = points[index + 1];
+            var dx = p1.x - p0.x;
+            var dy = p1.y - p0.y;
+            point.angle = Math.atan2(dy, dx);
+            if (index !== 0) {
+              point.angle = (points[index - 1].angle + point.angle) / 2;
+            }
+
+            var endX = point.x + arrowSize * Math.cos(point.angle);
+            var endY = point.y + arrowSize * Math.sin(point.angle);
+            var arrowStart = 'M' + point.x + ',' + (point.y + offsetY);
+            var arrowEnd = 'L' + endX + ',' + (endY + offsetY);
+            paper.path(arrowStart + arrowEnd);
+            paper.circle(endX, endY + offsetY, 1)
+          });
+          var angleDiff = points.map(function (point, index, points){
+            if (index === points.length - 1) return;
+            var diff = Math.abs((points[index + 1].angle - points[index].angle) * 180 / Math.PI).toFixed(2);
+            return diff > 345 || diff < 15;
+          });
+          console.log(angleDiff);
+
+          // var samplingRate = 0.01;
+          // var points = [];
+          // var pathLength = Raphael.getTotalLength(path);
+          // for (var i = 0; i < 1; i += samplingRate) {
+          //   points.push(Raphael.getPointAtLength(path, pathLength * i));
+          // }
+          // var cx = points.reduce(function (sum, point) {
+          //   return sum += point.x;
+          // }, 0) / points.length;
+          // var cy = points.reduce(function (sum, point) {
+          //   return sum += point.y;
+          // }, 0) / points.length;
+          // var PolarPoint = function (x, y) {
+          //     this.r = Math.sqrt(Math.pow(x - cx,2) + Math.pow(y - cy,2));
+          //     this.theta = Math.atan2((y - cy),(x - cx));
+          // };
+
+          // var polarPoints = points.map(function (point) {
+          //   return new PolarPoint(point.x, point.y);
+          // });
+
+          // var minR, maxR;
+          // var averageRadius = polarPoints.reduce(function (sum, point) {
+          //   return sum + point.r;
+          // }, 0) / polarPoints.length;
+          // var deviations = polarPoints.sort(function(a, b) {return a.theta - b.theta}).map(function (point) {
+          //   return Math.pow((point.r - averageRadius) / averageRadius, 2);
+          // });
+          // console.log(polarPoints);
+          // console.log(deviations);
+          // var paper = $scope.selectedShape.el.paper;
+          // console.log(minR, maxR, maxR/minR);
+          // paper.circle(cx, cy, averageRadius);
+          // paper.text(cx, cy, (maxR/minR).toFixed(2))
+          // var R = polarPoints.reduce(function (sum, point) {
+          //   return sum += point.r;
+          // }, 0) / polarPoints.length;
+          // var a = polarPoints.reduce(function (sum, point) {
+          //   return sum += point.r * Math.cos(point.theta);
+          // }, 0) * 2 / polarPoints.length;
+          // var b = polarPoints.reduce(function (sum, point) {
+          //   return sum += point.r * Math.sin(point.theta);
+          // }, 0) * 2 / polarPoints.length;
+
+          // polarPoints.forEach(function (point) {
+          //   if ((point.r - R) < 10) isCircle = false;
+          // })
+          // var avgDeviation = polarPoints.reduce(function (sum, point) {
+            // console.log(R, a, b)
+            // return sum += point.r - R;// - a * Math.cos(point.theta) - b * Math.sin(point.theta);
+          // }, 0) / polarPoints.length;
+
+          // console.log('Roundness: ', Math.abs(avgDeviation));
+          // if (Math.abs(avgDeviation) < 25) return [cx, cy, R];
+          return false;
+        }
+
         if ($scope.tool.name === 'path') {
           var path = $scope.selectedShape.el.attr('path');
           var interval = 5;
@@ -113,6 +213,13 @@ angular.module('whiteboard')
             }
           }, path[0][0] + path[0][1] + ',' + path[0][2] + ' ' + "R");
           $scope.selectedShape.el.attr('path', newPath);
+          
+          var newCircle = roundness($scope.selectedShape.el.attr('path'));
+          if (newCircle) {
+            var paper = $scope.selectedShape.el.paper;
+            // $scope.selectedShape.el.remove();
+            paper.circle(newCircle[0], newCircle[1], newCircle[2]);
+          }
         }
         Snap.createSnaps($scope.selectedShape.el);
         Broadcast.completeShape($scope.selectedShape.id);
@@ -145,8 +252,8 @@ angular.module('whiteboard')
 
     },
     link: function (scope, element, attrs, ctrls) {
-      scope.paper.sizeX = 400;
-      scope.paper.sizeY = 400;
+      scope.paper.sizeX = 1000;
+      scope.paper.sizeY = 500;
       ShapeBuilder.raphael = Raphael(document.getElementById('board-container'), scope.paper.sizeX, scope.paper.sizeY);
 
       scope.paper.$canvas = element.find('svg');
