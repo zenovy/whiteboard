@@ -7,7 +7,7 @@ angular.module('whiteboard.services.inputhandler', [])
 
   function getMouseXY (ev) {
     var canvasMarginXY = BoardData.getCanvasMargin();
-    var scalingFactor = BoardData.getScalingFactor();
+    var scalingFactor = BoardData.getZoomScale();
     var offsetXY = BoardData.getOffset();
     return {
       x: (ev.clientX - canvasMarginXY.x) * scalingFactor + offsetXY.x,

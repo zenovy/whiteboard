@@ -22,6 +22,7 @@ angular.module('whiteboard.services.boarddata', [])
   var currentShape;
   var editorShape;
   var socketID;
+  var _counter = 0;
 
   var tool = {
     name: 'path',
@@ -30,6 +31,9 @@ angular.module('whiteboard.services.boarddata', [])
       stroke: '#000000'
     }
   };
+
+  //-----------------
+  //utility functions
 
   function createBoard (element) {
     board = Raphael(element[0], svgWidth, svgHeight);
@@ -40,21 +44,52 @@ angular.module('whiteboard.services.boarddata', [])
     viewBoxHeight = svgHeight;
   }
 
+  function generateShapeID () {
+    return _counter++;
+  }
+
+  function getShapeByID (id, socketID) {
+    return shapeStorage[socketID][id];
+  }
+
+  function getCurrentShapeID () {
+    return _counter - 1;
+  }
+
+  function pushToStorage (id, socketID, shape) {
+    if (!shapeStorage[socketID]) {
+      shapeStorage[socketID] = {};
+    }
+    shapeStorage[socketID][id] = shape;
+  }
+
+  //-----------------------
+  //static property getters
+
   function getBoard () {
     return board;
   }
 
-  function setEditorShape (shape) {
-    editorShape = shapeStorage[socketID][shape.id];
+  function getOriginalDims () {
+    return {
+      width: svgWidth,
+      height: svgHeight
+    };
   }
 
-  function unsetEditorShape () {
-    editorShape = null;
+  function getCanvas () {
+    return $canvas;
   }
 
-  function getEditorShape () {
-    return editorShape;
+  function getCanvasMargin () {
+    return {
+      x: canvasMarginX,
+      y: canvasMarginY
+    };
   }
+
+  //-----------------------
+  //property getter/setters
 
   function getViewBoxDims () {
     return {
@@ -66,24 +101,6 @@ angular.module('whiteboard.services.boarddata', [])
   function setViewBoxDims (newViewBoxDims) {
     viewBoxWidth = newViewBoxDims.width;
     viewBoxHeight = newViewBoxDims.height;
-  }
-
-  function getOriginalDims () {
-    return {
-      width: svgWidth,
-      height: svgHeight
-    };
-  }
-
-  function getCanvasMargin () {
-    return {
-      x: canvasMarginX,
-      y: canvasMarginY
-    };
-  }
-
-  function getScalingFactor () {
-    return scalingFactor;
   }
 
   function getOffset () {
@@ -98,49 +115,24 @@ angular.module('whiteboard.services.boarddata', [])
     offsetY = newOffset.y;
   }
 
-  function getCanvas () {
-    return $canvas;
+  function getZoomScale () {
+    return scalingFactor;
+  }
+
+  function setZoomScale (scale) {
+    scalingFactor = 1 / scale;
+  };
+
+  function getSocketID () {
+    return socketID;
   }
 
   function setSocketID (id) {
     socketID = id;
   }
 
-  function getSocketID () {
-    return socketID;
-  }
-
-  function pushToStorage (id, socketID, shape) {
-    if (!shapeStorage[socketID]) {
-      shapeStorage[socketID] = {};
-    }
-    shapeStorage[socketID][id] = shape;
-  }
-
-  function getShapeByID (id, socketID) {
-    return shapeStorage[socketID][id];
-  }
-
-  function getCurrentShape () {
-    return currentShape;
-  }
-
-  function setCurrentShape () {
-    currentShape = shapeStorage[socketID][_counter - 1];
-  }
-
-  function unsetCurrentShape () {
-    currentShape = null;
-  }
-
-  var _counter = 0;
-  function getCurrentShapeID () {
-    return _counter - 1;
-  }
-
-  function generateShapeID () {
-    return _counter++;
-  }
+  //------------
+  //tool methods
 
   function getCurrentTool () {
     return tool;
@@ -155,41 +147,68 @@ angular.module('whiteboard.services.boarddata', [])
     tool.colors.stroke = stroke; 
   }
 
-  function setZoomScale (scale) {
-    scalingFactor = 1 / scale;
-  };
+  //
+  //focused shape getter/setters
 
-  function getZoomScale () {
-    return scalingFactor;
+  function getEditorShape () {
+    return editorShape;
+  }
+
+  function setEditorShape (shape) {
+    editorShape = shapeStorage[socketID][shape.id];
+  }
+
+  function unsetEditorShape () {
+    editorShape = null;
+  }
+
+  function getCurrentShape () {
+    return currentShape;
+  }
+
+  function setCurrentShape () {
+    currentShape = shapeStorage[socketID][_counter - 1];
+  }
+
+  function unsetCurrentShape () {
+    currentShape = null;
   }
 
   return {
+    //utility functions
     createBoard: createBoard,
-    getCurrentShape: getCurrentShape,
-    getCurrentShapeID: getCurrentShapeID,
-    getShapeByID: getShapeByID,
-    getCurrentTool: getCurrentTool,
     generateShapeID: generateShapeID,
-    setColors: setColors,
-    setZoomScale: setZoomScale,
-    getZoomScale: getZoomScale,
-    getCanvas: getCanvas,
-    setSocketID: setSocketID,
-    getSocketID: getSocketID,
-    setCurrentToolName: setCurrentToolName,
-    getBoard: getBoard,
-    getScalingFactor: getScalingFactor,
-    getOffset: getOffset,
-    getCanvasMargin: getCanvasMargin,
+    getShapeByID: getShapeByID,
+    getCurrentShapeID: getCurrentShapeID,
     pushToStorage: pushToStorage,
-    setCurrentShape: setCurrentShape,
-    unsetCurrentShape: unsetCurrentShape,
+
+    //static property getters
+    getBoard: getBoard,
+    getOriginalDims: getOriginalDims,
+    getCanvas: getCanvas,
+    getCanvasMargin: getCanvasMargin,
+    
+    //property getter/setters
     getViewBoxDims: getViewBoxDims,
     setViewBoxDims: setViewBoxDims,
+    getOffset: getOffset,
     setOffset: setOffset,
-    getOriginalDims: getOriginalDims,
+    getZoomScale: getZoomScale,
+    setZoomScale: setZoomScale,
+    getSocketID: getSocketID,
+    setSocketID: setSocketID,
+    
+    //tool methods
+    getCurrentTool: getCurrentTool,
+    setColors: setColors,
+    setCurrentToolName: setCurrentToolName,
+
+    //focused shape getters/setters
+    getCurrentShape: getCurrentShape,
+    setCurrentShape: setCurrentShape,
+    unsetCurrentShape: unsetCurrentShape,
+    getEditorShape: getEditorShape,
     setEditorShape: setEditorShape,
-    unsetEditorShape: unsetEditorShape,
-    getEditorShape: getEditorShape
+    unsetEditorShape: unsetEditorShape
   }
 });

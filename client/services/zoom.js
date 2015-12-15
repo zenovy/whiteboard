@@ -2,7 +2,7 @@ angular.module('whiteboard.services.zoom', [])
 .factory('Zoom', ['BoardData', function (BoardData) {
   zoom = function (ev) {
     var board = BoardData.getBoard();
-    var scalingFactor = BoardData.getScalingFactor();
+    var scalingFactor = BoardData.getZoomScale();
     var offset = BoardData.getOffset();
     var originalDims = BoardData.getOriginalDims();
     var currentDims = BoardData.getViewBoxDims();
