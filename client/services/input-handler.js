@@ -27,6 +27,9 @@ angular.module('whiteboard.services.inputhandler', [])
     mouseUp: function (ev) {
     },
     mouseOver: function (ev) {
+      if (isToggled('pan')) {
+        actions['pan'].mouseHold(ev);
+      }
     }
   };
 
@@ -68,6 +71,9 @@ angular.module('whiteboard.services.inputhandler', [])
       BoardData.unsetEditorShape();
     },
     mouseOver: function (ev) {
+      if (isToggled('pan')) {
+        actions['pan'].mouseHold(ev);
+      }
       var mouseXY = getMouseXY(ev);
       Visualizer.visualizeSelection(mouseXY);
     }
@@ -167,6 +173,9 @@ angular.module('whiteboard.services.inputhandler', [])
       }
     },
     mouseOver: function (ev) {
+      if (isToggled('pan')) {
+        actions['pan'].mouseHold(ev);
+      }
       var mouseXY = getMouseXY(ev);
       Snap.snapToPoints(mouseXY.x, mouseXY.y);
     }
@@ -207,10 +216,15 @@ angular.module('whiteboard.services.inputhandler', [])
   }
 
   function mouseDown (ev) {
-    var toolName = parseToolName(BoardData.getCurrentTool().name)
+    if (ev.button === 0) {
+      var toolName = parseToolName(BoardData.getCurrentTool().name)
 
-    toggle(toolName);
-    actions[toolName].mouseDown(ev);
+      toggle(toolName);
+      actions[toolName].mouseDown(ev);
+    } else if (ev.button === 2) {
+      toggle('pan');
+      actions['pan'].mouseDown(ev);
+    }
   }
 
   function mouseMove (ev) {
@@ -224,11 +238,14 @@ angular.module('whiteboard.services.inputhandler', [])
   }
 
   function mouseUp (ev) {
-    var toolName = parseToolName(BoardData.getCurrentTool().name)
+    if (ev.button === 0) {
+      var toolName = parseToolName(BoardData.getCurrentTool().name)
 
-    if (isToggled(toolName)) {
       toggle(toolName);
       actions[toolName].mouseUp(ev);
+    } else if (ev.button === 2) {
+      toggle('pan');
+      actions['pan'].mouseUp(ev);
     }
   }
 
@@ -236,7 +253,7 @@ angular.module('whiteboard.services.inputhandler', [])
     //just in case
   }
 
-  function rightClick (ev) {
+  function rightClickMenu (ev) {
     ev.preventDefault();
   }
 
@@ -245,6 +262,6 @@ angular.module('whiteboard.services.inputhandler', [])
     mousemove: mouseMove,
     mouseup: mouseUp,
     dblclick: doubleClick,
-    contextmenu: rightClick
+    contextmenu: rightClickMenu
   };
 }]);
