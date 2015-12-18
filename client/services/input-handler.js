@@ -67,8 +67,12 @@ angular.module('whiteboard.services.inputhandler', [])
       var editorShape = BoardData.getEditorShape();
       var currentTool = BoardData.getCurrentTool();
 
-      EventHandler.finishMovingShape(editorShape.myid, editorShape.socketId);
-      BoardData.unsetEditorShape();
+      if (editorShape) {
+        EventHandler.finishMovingShape(editorShape.myid, editorShape.socketId);
+        BoardData.unsetEditorShape();
+      } else {
+        toggle('move');
+      }
     },
     mouseOver: function (ev) {
       if (isToggled('pan')) {
