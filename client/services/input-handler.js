@@ -236,10 +236,15 @@ angular.module('whiteboard.services.inputhandler', [])
     //just in case
   }
 
+  function rightClick (ev) {
+    ev.preventDefault();
+  }
+
   return {
     mousedown: mouseDown,
     mousemove: mouseMove,
     mouseup: mouseUp,
-    dblclick: doubleClick
+    dblclick: doubleClick,
+    contextmenu: rightClick
   };
 }]);
