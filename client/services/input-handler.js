@@ -46,6 +46,9 @@ angular.module('whiteboard.services.inputhandler', [])
   actions.move = {
     mouseDown: function (ev) {
       var shape = BoardData.getBoard().getElementByPoint(ev.clientX, ev.clientY);
+      if (ev.ctrlKey) {
+        shape.clone();
+      }
       if (shape) {
         BoardData.setEditorShape(shape);
       } else {
